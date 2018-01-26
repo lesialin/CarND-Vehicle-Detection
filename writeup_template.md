@@ -1,44 +1,51 @@
-## Writeup Template
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
+## Vehicle Detection
 
----
-
-**Vehicle Detection Project**
+This is the project 5 of Udactiy self-driving car Term1. 
 
 The goals / steps of this project are the following:
 
-* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
-* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
-* Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
-* Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
-* Estimate a bounding box for vehicles detected.
+- [x] Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
+- [x] Apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
+- [x] Normalize your features and randomize a selection for training and testing.
+- [x]  A sliding-window technique and use trained classifier to search for vehicles in images.
+- [x] Run a pipeline on a video stream and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
 
-[//]: # (Image References)
-[image1]: ./examples/car_not_car.png
-[image2]: ./examples/HOG_example.jpg
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
-[video1]: ./project_video.mp4
+      ​
 
-## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+### Procedure and Pipeline of Vehicle Detection  
 
 ---
-### Writeup / README
+### Feature Extraction and Classifier:
 
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
+Here, I used histogram of Oriented Gradients (HOG) and histogram of YUV image, plus spatial image in 32x32 size. Use these features to train in linear SVM.  I thought Y channel in YUV color domain is very useful of  HOG feature to classify cars. But I wonder the color information of HOG and spacial image is also useful too, so I  tried these feature combinations to experiment the linear SVM classifier. 
 
-You're reading it!
+The best  accuracy in my experiment is about 99% in current dataset. 
 
-### Histogram of Oriented Gradients (HOG)
+So I  used HOG and histogam of YUV channel, plus spatial image with 32x32 size. 
 
-#### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
+You can find the training processes in TrainCarDetect.py 
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+|                       | Feature 1 | Feature 2       | Feature 3     | Accuracy |
+| --------------------- | --------- | --------------- | ------------- | -------- |
+| Feature combination 1 | HOG Y     | Spatial = False | Histogram YUV | 94.62%   |
+| Feature combination 2 | HOG Y     | Spatial = True  | Histogram YUV | 97.75%   |
+| Feature combination 3 | HOG YUV   | Spatial = True  | Histogram YUV | 99.07%   |
+
+### Dataset 
+
+ I used dataset from the course, which are the labeled data for [vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/vehicles.zip) and [non-vehicle](https://s3.amazonaws.com/udacity-sdc/Vehicle_Tracking/non-vehicles.zip) examples to train the classifier.  These example images come from a combination of the [GTI vehicle image database](http://www.gti.ssr.upm.es/data/Vehicle_database.html), the [KITTI vision benchmark suite](http://www.cvlibs.net/datasets/kitti/)
+
+### Feature Extraction
+
+The code for feature extraction is in VehicleDetecy/FeatureExtraction.py
+
+- HOG feature in function "get_hog_features"
+- Histogram feature in function "color_hist"
+- spatial feature in function "bin_spatial"
+
+You can also find feature extraction from single image and multi-images in function "single_img_features" and "extract_features" respectively.
+
+#### 1. HOG features from the training images.
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
