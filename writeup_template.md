@@ -12,6 +12,25 @@ The goals / steps of this project are the following:
 
       ​
 
+### Code Layout
+
+- VehicleDetect/
+  - FeatureExtraction.py
+    - Feature extraction, include HOG, histogram, and spacial feature processes
+  - CarDetet.py
+    - function to find  cars in single frame 
+  - CarDetectPipe.py
+    - function to detect cars of current frame by past frames information
+- Script
+  - TrainCarDetect.py
+    - Training Vehicle detection classifier
+  - TestCarDetect.py
+    - Test Vehicle detection classifier in test_images folder
+  - CarDetectVidProc.py
+    - process car detection in a video
+  - VisualizeFeature.py
+    - Visualize feature extraction, include HOG and histogram.
+
 ### Procedure and Pipeline of Vehicle Detection  
 
 ---
@@ -22,8 +41,6 @@ Here, I used histogram of Oriented Gradients (HOG) and histogram of YUV image, p
 The best  accuracy in my experiment is about 99% in current dataset. 
 
 So I  used HOG and histogam of YUV channel, plus spatial image with 32x32 size. 
-
-You can find the training processes in TrainCarDetect.py 
 
 |                       | Feature 1 | Feature 2       | Feature 3     | Accuracy |
 | --------------------- | --------- | --------------- | ------------- | -------- |
@@ -49,32 +66,88 @@ You can also find feature extraction from single image and multi-images in funct
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
-![alt text][image1]
+![](output_images/car_not_car.png)
 
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+I then explored YUV color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+HOG parameters are `orientations=9`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
 
-![alt text][image2]
+![alt text](output_images/hog.png)
 
-#### 2. Explain how you settled on your final choice of HOG parameters.
+#### 2. HOG parameters.
 
-I tried various combinations of parameters and...
+I used the same HOG parameters as the course example, which have the pretty good result in car detection classifier
 
-#### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
+#### 3. Classifier of Car Detection
 
-I trained a linear SVM using...
+I used the following parameters of feature extraction:
+
+```
+#Define the colorspace
+color_space = 'YUV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+# Define HOG parameters
+spatial_feat=True 
+hist_feat=True
+hog_feat=True
+orient = 9
+pix_per_cell = 8
+cell_per_block = 2
+hog_channel = "ALL" # Can be 0, 1, 2, or "ALL"
+spatial_size = (32,32)
+hist_bins = 32	
+```
+
+After combine the features from HOG, histogram and spatial images, I applied normalization within these features:
+
+```
+X_scaler = StandardScaler().fit(X)
+# Apply the scaler to X
+scaled_X = X_scaler.transform(X)
+```
+
+Then, I used the simple linear-SVM to train the car detection classifier.
+
+```
+# Use a linear SVC 
+svc = LinearSVC()
+```
 
 ### Sliding Window Search
 
-#### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+I decided to search random window positions at random scales all over the image. The idea is showed like this image.
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+![alt text](output_images/slide_win.png)
 
-![alt text][image3]
+This is the search window scale from far to close position. I divided image into top, middle and bottom portion and searching the cars in different scale. Each portion are overlapped to smooth the search results.
 
-#### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
+```
+# Top portion of ROI image
+scale = 1.5
+ystart = 400
+ystop = 550
+xstart = 400
+xstop = 1208
+bboxes1 = find_cars(img, xstart, xstop, ystart, ystop, scale,color_space, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,hog_channel)
+# Middle portion of ROI image
+scale = 2.8
+ystart = 450
+ystop = 600
+xstart = 400
+xstop = 1208
+bboxes2 = find_cars(img,  xstart, xstop,ystart, ystop, scale,color_space, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,hog_channel)
+# Bottom portion of ROI image
+scale = 3.2
+ystart = 500
+ystop = 656
+xstart = 400
+xstop = 1208
+bboxes3 = find_cars(img,  xstart, xstop, ystart, ystop, scale,color_space, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins,hog_channel)
+```
+
+
+
+#### 2. Examples of test images to demonstrate the pipeline
 
 Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
 
