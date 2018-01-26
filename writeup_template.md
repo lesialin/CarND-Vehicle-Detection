@@ -149,32 +149,43 @@ bboxes3 = find_cars(img,  xstart, xstop, ystart, ystop, scale,color_space, svc, 
 
 #### 2. Examples of test images to demonstrate the pipeline
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+The pipeline to detection car in a frame is in TestCarDetect.py. 
 
-![alt text][image4]
----
+
+
+Here are the detected and detected boxes heatmap of test images:
+
+![](output_images/test1_out.png)
+
+![](output_images/test2_out.png)![](output_images/test3_out.png)
+
+![](output_images/test4_out.png)
+
+![](output_images/test5_out.png)
+
+![](output_images/test6_out.png)
 
 ### Video Implementation
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+#### 1. Final video output.  
+Here's a [link to my video result](./project_video_out.mp4)
 
 
-#### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
+#### 2. Filter for false positives and  combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+I recorded the positions of positive detections in each frame of the video.  I accumulated  the positive detection from current frame to past 9 frames (used total 10 frames) to create a heatmap and then threashold the map to identify vehicle potition.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
 
 Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
 
-### Here are six frames and their corresponding heatmaps:
+### Here are ten frames and their corresponding heatmaps:
 
-![alt text][image5]
+![alt text](output_images/cardetect_frames.png)
 
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
+### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap and apply label function from all ten frames:
+![alt text](output_images/heatmap_cum.png)
 
 ### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
+![alt text](output_images/heatmap.png)
 
 
 
@@ -182,7 +193,9 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+From the result of the test video, I notice that the car sometimes detected only half instead of whole car. I thought the dataset could be augmented to create more car examples with more generality. Shifted, rotation or scale can be used to augment the dataset. 
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+Moreover, two cars overlapped in a car record video happens frequently. To separate cars in overlapping would apply the detection by car position in too close distance and also with tracking method. I just stopped the algorithm in detecting cars for now. But  if the tracking method  applied would have a better detection result to assist  self-driving algorithm.
+
+
 
